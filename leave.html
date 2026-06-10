@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Leave application</title>
+    </head>
+    <body>
+        <label for="leave-type">Leave Type: </label>
+            <select name="leave_type" id="leave-type" required>
+            <option value="" disabled selected>-- Select Leave Type --</option>
+            <option value="annual">Annual Leave (Vacation)</option>
+            <option value="sick">Sick Leave</option>
+            <option value="casual">Casual Leave</option>
+            <option value="maternity">Maternity Leave</option>
+            <option value="paternity">Paternity Leave</option>
+            <option value="unpaid">Unpaid Leave</option>
+            </select>
+        <p>Start date: <input type="date" id="startDate"></p>
+        <p>End date: <input type="date" id="endDate"></p>
+        <p>Reason: <input type="text" id="reason"></p>
+        <button id="submitBtn">Submit</button>
+        <p id="message"></p>
+        <script src="leave.js"></script>
+    </body>
+</html>
