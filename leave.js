@@ -95,6 +95,13 @@ async function applyLeave()
     }
 
     const result = await response.text();
+    if(result === "No leave balance remaining")
+    {
+        document.getElementById("message")
+            .innerText = result;
+
+        return;
+    }
 
     if(leaveId)
     {
@@ -102,4 +109,5 @@ async function applyLeave()
     }
 
     window.location.href = "history.html";
+  
 }

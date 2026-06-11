@@ -36,4 +36,3 @@ async function register() {
     document.getElementById("message").innerText=result;
 }
 
-

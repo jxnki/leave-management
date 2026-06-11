@@ -131,23 +131,16 @@ app.post("/login", async (req, res) => {
 
 app.post("/leave", (req, res) => {
 
-    const { user_id,leave_type,start_date,end_date,reason } = req.body;
+    const {user_id,leave_type,start_date,end_date,reason} = req.body;
 
     const status = "Pending";
 
-    const sql = "INSERT INTO leave_requests (user_id, leave_type, start_date, end_date, reason, status) VALUES (?,?,?,?,?,?)";
+    const checkSql = "SELECT COUNT(*) AS taken FROM leave_requests WHERE user_id=? AND status='Approved'";
 
     db.query(
-        sql,
-        [
-            user_id,
-            leave_type,
-            start_date,
-            end_date,
-            reason,
-            status
-        ],
-        (err, result) => {
+        checkSql,
+        [user_id],
+        (err, results) => {
 
             if(err)
             {
@@ -155,7 +148,31 @@ app.post("/leave", (req, res) => {
                 return;
             }
 
-            res.send("Leave Applied Successfully");
+            const totalLeaves = 3;
+
+            const taken = results[0].taken;
+
+            const remaining = totalLeaves - taken;
+
+            if(remaining <= 0)
+            {
+                return res.send("No leave balance remaining");
+            }
+
+            const sql =
+                "INSERT INTO leave_requests (user_id, leave_type, start_date, end_date, reason, status) VALUES (?,?,?,?,?,?)";
+
+            db.query( sql,[user_id,leave_type,start_date,end_date,reason,status],
+                (err, result) => {
+
+                    if(err)
+                    {
+                        console.log(err);
+                        return;
+                    }
+
+                    res.send("Leave Applied Successfully");
+                });
         });
 });
 
@@ -295,6 +312,37 @@ app.put("/leave/:id", (req, res) => {
             }
 
             res.send("Leave Updated");
+        });
+});
+
+app.get("/dashboard/:id", (req, res) => {
+
+    const userId = req.params.id;
+
+    const sql =
+        "SELECT COUNT(*) AS taken FROM leave_requests WHERE user_id=? AND status='Approved'";
+
+    db.query(
+        sql,
+        [userId],
+        (err, results) => {
+
+            if(err)
+            {
+                console.log(err);
+                return;
+            }
+
+            const totalLeaves = 3;
+            const leavesTaken = results[0].taken;
+
+            const remainingLeaves = Math.max( 0, totalLeaves - leavesTaken);
+
+            res.json({
+                totalLeaves,
+                leavesTaken,
+                remainingLeaves
+            });
         });
 });
 
