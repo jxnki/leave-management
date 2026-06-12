@@ -99,6 +99,9 @@ async function applyLeave()
     {
         document.getElementById("message")
             .innerText = result;
+        setTimeout(() => {
+            window.location.href = "employee.html";
+        }, 1000);
 
         return;
     }
@@ -109,5 +112,12 @@ async function applyLeave()
     }
 
     window.location.href = "history.html";
-  
 }
+document.getElementById("dashboardBtn").addEventListener("click", () => window.location.href = "employee.html");
+document.getElementById("historyBtn").addEventListener("click", () => window.location.href = "history.html");
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userName");
+    window.location.href = "login.html";
+});

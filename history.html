@@ -1,26 +1,48 @@
 <!DOCTYPE html>
-<html>
-<body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Leave History</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="margin: 0;">
+    <div class="dashboard-layout">
+        
+        <aside class="sidebar">
+            <h2>LMS Portal</h2>
+            <button id="dashboardBtn" class="btn-outline">Dashboard</button>
+            <button id="applyBtn" class="btn-outline">Apply for Leave</button>
+            <button class="btn-primary" style="cursor: default;">View My Leaves</button>
+            
+            <div style="flex-grow: 1;"></div>
+            <button id="logoutBtn" class="btn-danger">Logout</button>
+        </aside>
 
-<h1>My Leaves</h1>
-
-<table border="1">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Type</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Reason</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-
-    <tbody id="leaveTable">
-    </tbody>
-</table>
-
-<script src="history.js"></script>
-
+        <main class="main-content">
+            <div class="card card-wide">
+                <h1>My Leave History</h1>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaveTable">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="history.js"></script>
 </body>
 </html>

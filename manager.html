@@ -1,34 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
 <body>
+    <nav class="navbar">
+        <a href="login.html" style="text-decoration: none;"><button class="btn-secondary">Back</button></a>
+        <button id="logoutBtn" class="btn-danger">Logout</button>
+    </nav>
 
-<h1>Manager Dashboard</h1>
-
-<table border="1">
-    <thead>
-        <tr>
-            <th>Request ID</th>
-            <th>User ID</th>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Reason</th>
-            <th>Start date</th>
-            <th>End date</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-
-    <tbody id="leaveTable">
+    <div class="card card-wide">
+        <h1>Pending Leave Requests</h1>
         
-    </tbody>
-</table>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Req ID</th>
+                        <th>Emp ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Reason</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="leaveTable">
+                    </tbody>
+            </table>
+        </div>
+    </div>
 
-<button id="logoutBtn">
-    Logout
-</button>
-
-<script src="manager.js"></script>
-
+    <script src="manager.js"></script>
 </body>
 </html>

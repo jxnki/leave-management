@@ -60,6 +60,7 @@ async function login() {
         localStorage.setItem("userId",result.userId);
 
         localStorage.setItem("role",result.role);
+        localStorage.setItem("userName", result.name);
         if(selectedRole === "employee" && result.role !== "employee")
         {
             document.getElementById("message").innerText ="Please use the Manager Portal";

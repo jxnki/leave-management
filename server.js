@@ -114,7 +114,8 @@ app.post("/login", async (req, res) => {
                     res.json({
                         message: "Login Successful",
                         userId: results[0].id,
-                        role: results[0].role
+                        role: results[0].role,
+                        name: results[0].name
                     });
                 }
                 else
@@ -148,7 +149,7 @@ app.post("/leave", (req, res) => {
                 return;
             }
 
-            const totalLeaves = 3;
+            const totalLeaves = 20;
 
             const taken = results[0].taken;
 
@@ -333,7 +334,7 @@ app.get("/dashboard/:id", (req, res) => {
                 return;
             }
 
-            const totalLeaves = 3;
+            const totalLeaves = 20;
             const leavesTaken = results[0].taken;
 
             const remainingLeaves = Math.max( 0, totalLeaves - leavesTaken);

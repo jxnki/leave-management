@@ -68,3 +68,12 @@ async function loadPendingLeaves()
         `;
     });
 }
+document.getElementById("logoutBtn").addEventListener("click", logout);
+
+
+function logout()
+{
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    window.location.href = "login.html";
+}

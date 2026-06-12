@@ -33,6 +33,14 @@ async function register() {
 
     const result = await response.text();
 
-    document.getElementById("message").innerText=result;
+    document.getElementById("message").innerText = result;
+
+    // ADD THIS NEW BLOCK: Redirect to login on success
+    if (result === "User registered") {
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1000); // Waits 1 second before redirecting
+    }
 }
+    
 

@@ -1,0 +1,363 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Coffee & Cream Palette */
+    --bg-main: #E8D8C4;       /* Soft Beige Background */
+    --card-bg: #F4EBE1;       /* Warm Cream for Cards (Replaces White/Green) */
+    --primary: #A77F60;       /* Warm Caramel (Kept from your choice) */
+    --primary-dark: #8A5F41;  /* Deep Mocha (Kept from your choice) */
+    
+    /* Custom UI Colors derived from the palette */
+    --text-main: #3A2618;     /* Very dark brown for readable text */
+    --text-muted: #6D4C33;    /* Muted brown for secondary text */
+    --input-bg: #EAE0D5;      /* Slightly darker cream for inputs */
+    --border-color: #D4C4B7;  /* Soft border color */
+    --danger: #BA6B5D;        /* Warm terracotta red for logout/reject */
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Layout & Containers --- */
+.center-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.card {
+    background: var(--card-bg);
+    /* Increased padding: 3.5rem top/bottom, 2.5rem left/right for more height */
+    padding: 3.5rem 2.5rem; 
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    width: 100%;
+    /* Increased from 400px to 550px to make it a wider rectangle */
+    max-width: 550px; 
+    text-align: center;
+    border: 2px solid #FAD1B8;
+    
+}
+
+.card-wide {
+    max-width: 1200px;
+    width: 95%;
+    margin: 2rem auto;
+}
+
+/* --- Typography --- */
+h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--primary-dark);
+}
+
+h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+p#message {
+    margin-top: 1rem;
+    color: var(--danger);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* --- Forms & Inputs --- */
+.input-group {
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--primary-dark);
+}
+
+input, select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--input-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+input:focus, select:focus {
+    border-color: var(--primary);
+    background-color: var(--card-bg);
+}
+
+/* --- Buttons --- */
+button {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 0.75rem;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--card-bg);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: var(--primary-dark);
+    color: var(--card-bg);
+}
+
+.btn-secondary:hover {
+    background-color: #6B4932;
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: var(--card-bg);
+}
+
+.btn-danger:hover {
+    background-color: #9C5549;
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 2px solid var(--primary-dark);
+    color: var(--primary-dark);
+}
+
+.btn-outline:hover {
+    background-color: var(--primary-dark);
+    color: var(--card-bg);
+}
+
+/* --- Add this to your Button styles --- */
+.button-group {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.button-group button {
+    margin-bottom: 0; /* Removes the bottom margin so they align perfectly */
+}
+
+/* --- Navigation Bar --- */
+.navbar {
+    background-color: var(--card-bg);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    border-bottom: 3px solid var(--primary);
+}
+
+.navbar h2 {
+    font-size: 1.25rem;
+    color: var(--primary-dark);
+    font-weight: 700;
+}
+
+.navbar button {
+    width: auto;
+    margin: 0;
+    padding: 0.5rem 1.5rem;
+}
+
+/* --- Dashboard Stats Grid --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--input-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+/* --- Tables --- */
+.table-container {
+    overflow-x: auto;
+    margin-top: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    overflow: hidden;
+}
+
+thead {
+    background-color: var(--primary);
+    color: var(--card-bg);
+}
+
+th, td {
+    padding: 0.75rem 0.5rem; 
+    text-align: left;
+    border-bottom: 1px solid #FAD1B8;
+    font-size: 0.95rem; 
+}
+
+tbody tr:hover {
+    background-color: var(--input-bg);
+}
+
+td button {
+    width: auto;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    margin: 0.2rem 0.1rem;
+}
+
+/* Table specific button colors */
+td button:first-child {
+    background-color: var(--primary-dark);
+    color: var(--card-bg);
+}
+td button:last-child {
+    background-color: var(--danger);
+    color: var(--card-bg);
+}
+
+/* =========================================
+   DASHBOARD LAYOUT (SIDEBAR & MAIN CONTENT)
+   ========================================= */
+.dashboard-layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden; /* Prevents the whole page from scrolling */
+}
+
+.sidebar {
+    width: 260px;
+    background-color: var(--card-bg);
+    border-right: 2px solid #FAD1B8;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 10px rgba(216, 174, 126, 0.15);
+    z-index: 10;
+}
+
+.sidebar h2 {
+    color: var(--primary-dark);
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.main-content {
+    flex: 1; /* Tells the main content to fill the remaining space */
+    padding: 2rem 3rem;
+    overflow-y: auto; /* Only the main content scrolls if it gets too long */
+    background-color: var(--bg-main);
+}
+
+/* =========================================
+   WIDGETS & CALENDAR
+   ========================================= */
+.dashboard-widgets {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap; /* Wraps to next line if screen is small */
+    align-items: flex-start;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.calendar-header button {
+    width: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+}
+
+.calendar-weekdays, .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 equal columns for 7 days */
+    text-align: center;
+    gap: 5px;
+}
+
+.calendar-weekdays {
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.calendar-day {
+    padding: 0.5rem;
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    border: 1px solid #FAD1B8;
+    font-weight: 600;
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+}
+
+.calendar-day.empty {
+    background-color: transparent;
+    border: none;
+}
+
+.calendar-day.approved-day {
+    background-color: #6E8E59; /* Sage Green matching your chart! */
+    color: white;
+    box-shadow: 0 4px 6px rgba(110, 142, 89, 0.3);
+}

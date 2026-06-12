@@ -1,24 +1,61 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Leave application</title>
-    </head>
-    <body>
-        <label for="leave-type">Leave Type: </label>
-            <select name="leave_type" id="leave-type" required>
-            <option value="" disabled selected>-- Select Leave Type --</option>
-            <option value="annual">Annual Leave (Vacation)</option>
-            <option value="sick">Sick Leave</option>
-            <option value="casual">Casual Leave</option>
-            <option value="maternity">Maternity Leave</option>
-            <option value="paternity">Paternity Leave</option>
-            <option value="unpaid">Unpaid Leave</option>
-            </select>
-        <p>Start date: <input type="date" id="startDate"></p>
-        <p>End date: <input type="date" id="endDate"></p>
-        <p>Reason: <input type="text" id="reason"></p>
-        <button id="submitBtn">Submit</button>
-        <p id="message"></p>
-        <script src="leave.js"></script>
-    </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Application</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="margin: 0;">
+    <div class="dashboard-layout">
+        
+        <aside class="sidebar">
+            <h2>LMS Portal</h2>
+            <button id="dashboardBtn" class="btn-outline">Dashboard</button>
+            <button class="btn-primary" style="cursor: default;">Apply for Leave</button>
+            <button id="historyBtn" class="btn-outline">View My Leaves</button>
+            
+            <div style="flex-grow: 1;"></div>
+            <button id="logoutBtn" class="btn-danger">Logout</button>
+        </aside>
+
+        <main class="main-content">
+            <div class="card card-wide" style="max-width: 600px;">
+                <h1>Apply for Leave</h1>
+                
+                <div class="input-group">
+                    <label for="leave-type">Leave Type</label>
+                    <select name="leave_type" id="leave-type" required>
+                        <option value="" disabled selected>-- Select Leave Type --</option>
+                        <option value="annual">Annual Leave (Vacation)</option>
+                        <option value="sick">Sick Leave</option>
+                        <option value="casual">Casual Leave</option>
+                        <option value="maternity">Maternity Leave</option>
+                        <option value="paternity">Paternity Leave</option>
+                        <option value="unpaid">Unpaid Leave</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="reason">Reason</label>
+                    <input type="text" id="reason" placeholder="Brief reason for leave" required>
+                </div>
+
+                <button id="submitBtn" class="btn-primary">Submit Application</button>
+                <p id="message"></p>
+            </div>
+        </main>
+    </div>
+    <script src="leave.js"></script>
+</body>
 </html>
