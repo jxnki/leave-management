@@ -2,7 +2,7 @@
 loadLeaves();
 
 // AUTO-REFRESH: Silently reload the table data every 5 seconds (5000 ms)
-setInterval(loadLeaves, 2000);
+setInterval(loadLeaves, 5000);
 
 function editLeave(id)
 {
@@ -15,7 +15,15 @@ async function loadLeaves()
     const userId = localStorage.getItem("userId");
     
     // Fetch the latest data from the backend
-    const response = await fetch(`http://localhost:3000/leave/user/${userId}`);
+    const token = localStorage.getItem("token");
+
+    // 2. Show the wristband to the server!
+    const response = await fetch(`http://localhost:3000/leave/user/${userId}`, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${token}` 
+        }
+    });
     const leaves = await response.json();
     
     const table = document.getElementById("leaveTable");
@@ -55,6 +63,7 @@ document.getElementById("applyBtn").addEventListener("click", () => {
 document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("role");
+    localStorage.removeItem("token");
     localStorage.removeItem("userName");
-    window.location.href = "login.html";
+    window.location.href = "index.html";
 });

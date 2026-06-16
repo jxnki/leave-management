@@ -7,19 +7,12 @@ document
             "employee"
         );
 
-        window.location.href =
-            "login.html";
+        window.location.href = "login.html";
     });
 
-document
-    .getElementById("managerBtn")
-    .addEventListener("click", () => {
+document.getElementById("managerBtn").addEventListener("click", () => {
 
-        localStorage.setItem(
-            "loginRole",
-            "manager"
-        );
+        localStorage.setItem("loginRole","manager");
 
-        window.location.href =
-            "login.html";
+        window.location.href = "login.html";
     });

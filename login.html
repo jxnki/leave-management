@@ -3,31 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>SyncLeave | Login</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <nav class="navbar">
-        <a href="index.html" style="text-decoration: none;"><button class="btn-secondary">Back</button></a>
-    </nav>
+<body style="background-image: url('bg.png'); background-size: cover; background-position: center; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;">
+
+    <a class="top-left-link" href="index.html">&larr; Back</a>
+
     <div class="center-wrapper">
         <div class="card">
-            <h1 id="pageTitle">Login</h1>
-            
-            <div class="input-group">
-                <input type="email" id="email" placeholder="Email address" required>
-            </div>
-            
-            <div class="input-group">
-                <input type="password" id="password" placeholder="Password" required>
-            </div>
 
-            <button id="loginBtn" class="btn-primary">Login</button>
-            <button id="registerBtn" class="btn-outline">Create an Account</button>
-            
-            <p id="message"></p>
+            <h1 id="pageTitle">System Login</h1>
+
+            <form id="loginForm">
+
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="name@company.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="button" id="loginBtn" class="btn-primary">Login</button>
+
+                <div style="margin-top: 1rem;">
+                    <button type="button" id="registerBtn" class="btn-outline">Register</button>
+                </div>
+
+                <p id="message" style="margin-top: 0.75rem;"></p>
+            </form>
         </div>
     </div>
+
     <script src="login.js"></script>
 </body>
 </html>
+

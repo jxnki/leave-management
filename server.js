@@ -4,8 +4,10 @@ const express = require("express");
 const mysql = require("mysql2");
 const cors=require("cors");
 const bcrypt=require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const app = express();
+const SECRET_KEY = process.env.SECRET_KEY;
 
 app.use(express.json());
 app.use(cors());
@@ -21,24 +23,29 @@ db.connect((err) => {
         console.log(err);
         return;
     }
-
     console.log("Connected to MySQL");
 });
 
-app.get("/users", (req, res) => {
+function authenticateToken(req, res, next) {
+    // 1. Look at the request headers for the wristband
+    const authHeader = req.headers['authorization'];
+    
+    // Tokens are usually sent as "Bearer abc123def456". We just want the code part.
+    const token = authHeader && authHeader.split(' ')[1]; 
 
-    db.query(
-        "SELECT * FROM users",
-        (err, results) => {
+    // 2. If they didn't bring a wristband at all, kick them out (401 Unauthorized)
+    if (!token) return res.status(401).send("Access Denied: No Token Provided!");
 
-            if (err) {
-                console.log(err);
-                return;
-            }
-
-            res.json(results);
-        });
-});
+    // 3. Verify the wristband using our hidden .env secret key
+    jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
+        // If the signature is fake or expired, kick them out (403 Forbidden)
+        if (err) return res.status(403).send("Access Denied: Invalid Token!");
+        
+        // If it's valid, attach the decoded info to the request and let them in!
+        req.user = user; 
+        next(); // Moves on to your actual database code
+    });
+}
 
 app.post("/register", async (req, res) => {
 
@@ -83,56 +90,52 @@ app.post("/register", async (req, res) => {
     });
 });
 
-
 app.post("/login", async (req, res) => {
-
     const { email, password } = req.body;
-
     const sql = "SELECT * FROM users WHERE email=?";
 
-    db.query(
-        sql,
-        [email],
-        async (err, results) => {
+    db.query(sql, [email], async (err, results) => {
+        if(err) {
+            console.log(err);
+            return res.status(500).json({message: "Database error"}); // Don't leave the frontend hanging!
+        }
 
-            if(err)
-            {
-                console.log(err);
-                return;
+        if(results.length > 0) {
+            // 1. Grab the actual user from the database results
+            const user = results[0]; 
+            
+            const match = await bcrypt.compare(password, user.password); 
+
+            if(match) {
+                // 3. The Payload & Wristband (fixed typo)
+                const payload = { userId: user.id, role: user.role };
+                const token = jwt.sign(payload, process.env.SECRET_KEY, {expiresIn: "2h"});
+                
+                res.json({ 
+                    message: "Login successful",
+                    token: token, 
+                    userId: user.id, 
+                    role: user.role, 
+                    userName: user.name
+                });
+            } else {
+                // 4. Handle the wrong password scenario
+                res.json({message: "Invalid Credentials"}); 
             }
-
-            console.log(results);
-
-            if(results.length > 0)
-            {
-                const match =
-                    await bcrypt.compare(password,results[0].password
-                    );
-
-                if(match)
-                {
-                    res.json({
-                        message: "Login Successful",
-                        userId: results[0].id,
-                        role: results[0].role,
-                        name: results[0].name
-                    });
-                }
-                else
-                {
-                    res.json({message:"Invalid Credentials"});
-                }
-            }
-            else
-            {
-                res.json({message:"Invalid Credentials"});
-            }
+        }
+        else {
+            res.json({message:"Invalid Credentials"});
+        }
     });
 });
 
-app.post("/leave", (req, res) => {
+app.post("/leave",authenticateToken, (req, res) => {
 
-    const {user_id,leave_type,start_date,end_date,reason} = req.body;
+    const {leave_type,start_date,end_date,reason} = req.body;
+    const user_id = req.user.userId;
+    if (new Date(end_date) < new Date(start_date)) {
+        return res.send("Error: End date cannot be before start date.");
+    }
 
     const status = "Pending";
 
@@ -177,10 +180,9 @@ app.post("/leave", (req, res) => {
         });
 });
 
-app.get("/leave", (req, res) => {
-
-    db.query("SELECT * FROM leave_requests",
-        (err, results) => {
+app.get("/leave",authenticateToken, (req, res) => {
+    const sql = "SELECT leave_requests.*, users.name FROM leave_requests JOIN users ON leave_requests.user_id = users.id";
+    db.query(sql,(err, results) => {
 
             if(err)
             {
@@ -192,7 +194,7 @@ app.get("/leave", (req, res) => {
         });
 });
 
-app.get("/leave/pending", (req, res) => {
+app.get("/leave/pending", authenticateToken, (req, res) => {
     const sql = `SELECT leave_requests.*,users.name FROM leave_requests JOIN users ON leave_requests.user_id = users.id WHERE status=?`;
     db.query(
         sql,
@@ -208,7 +210,7 @@ app.get("/leave/pending", (req, res) => {
         });
 });
 
-app.get("/leave/user/:id", (req, res) => {
+app.get("/leave/user/:id",authenticateToken, (req, res) => {
 
     const userId = req.params.id;
 
@@ -229,7 +231,7 @@ app.get("/leave/user/:id", (req, res) => {
         });
 });
 
-app.get("/leave/:id", (req, res) => {
+app.get("/leave/:id", authenticateToken,(req, res) => {
 
     const id = req.params.id;
 
@@ -250,7 +252,7 @@ app.get("/leave/:id", (req, res) => {
         });
 });
 
-app.put("/leave/approve/:id", (req, res) => {
+app.put("/leave/approve/:id",authenticateToken, (req, res) => {
 
     const id = req.params.id;
 
@@ -271,7 +273,7 @@ app.put("/leave/approve/:id", (req, res) => {
         });
 });
 
-app.put("/leave/reject/:id", (req, res) => {
+app.put("/leave/reject/:id",authenticateToken, (req, res) => {
 
     const id = req.params.id;
 
@@ -292,7 +294,7 @@ app.put("/leave/reject/:id", (req, res) => {
         });
 });
 
-app.put("/leave/:id", (req, res) => {
+app.put("/leave/:id",authenticateToken, (req, res) => {
     const id = req.params.id;
 
     const { leave_type,start_date,end_date,reason } = req.body;
@@ -316,12 +318,11 @@ app.put("/leave/:id", (req, res) => {
         });
 });
 
-app.get("/dashboard/:id", (req, res) => {
+app.get("/dashboard/:id",authenticateToken, (req, res) => {
 
     const userId = req.params.id;
 
-    const sql =
-        "SELECT COUNT(*) AS taken FROM leave_requests WHERE user_id=? AND status='Approved'";
+    const sql = "SELECT COUNT(*) AS taken FROM leave_requests WHERE user_id=? AND status='Approved'";
 
     db.query(
         sql,

@@ -1,19 +1,19 @@
 document.getElementById("submitBtn").addEventListener("click", applyLeave);
 
-const leaveId =
-    localStorage.getItem("leaveId");
+const leaveId = localStorage.getItem("leaveId");
 
-    if(leaveId)
-    {
-        loadLeave(leaveId);
-    }
-async function loadLeave(id)
+if(leaveId)
 {
-    const response =
-        await fetch(
-            `http://localhost:3000/leave/${id}`
-        );
-
+    loadLeave(leaveId);
+}
+async function loadLeave(id) {
+    const token = localStorage.getItem("token"); 
+    const response = await fetch(`http://localhost:3000/leave/${id}`, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${token}` 
+        }
+    });
     const leave =
         await response.json();
 
@@ -53,45 +53,29 @@ async function applyLeave()
         return;
     }
     const user_id = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
 
     let response;
 
-    if(leaveId)
-    {
-        response = await fetch(
-            `http://localhost:3000/leave/${leaveId}`,
-            {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    leave_type,
-                    start_date,
-                    end_date,
-                    reason
-                })
-            }
-        );
-    }
-    else
-    {
-        response = await fetch(
-            "http://localhost:3000/leave",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    user_id,
-                    leave_type,
-                    start_date,
-                    end_date,
-                    reason
-                })
-            }
-        );
+    if(leaveId) {
+        response = await fetch(`http://localhost:3000/leave/${leaveId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ leave_type, start_date, end_date, reason })
+        });
+    } 
+    else {
+        response = await fetch("http://localhost:3000/leave", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ user_id, leave_type, start_date, end_date, reason })
+        });
     }
 
     const result = await response.text();
@@ -118,6 +102,19 @@ document.getElementById("historyBtn").addEventListener("click", () => window.loc
 document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("role");
+    localStorage.removeItem("token");
     localStorage.removeItem("userName");
-    window.location.href = "login.html";
+    window.location.href = "index.html";
+});
+
+const leaveInputs = document.querySelectorAll('#leave-type, #startDate, #endDate, #reason');
+
+leaveInputs.forEach(input => {
+    input.addEventListener('keypress', function(event) {
+        // Check if the key pressed was "Enter"
+        if (event.key === 'Enter') {
+            event.preventDefault(); 
+            document.getElementById('submitBtn').click(); // Digitally clicks the submit button!
+        }
+    });
 });

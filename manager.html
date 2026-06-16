@@ -6,34 +6,44 @@
     <title>Manager Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <nav class="navbar">
-        <a href="login.html" style="text-decoration: none;"><button class="btn-secondary">Back</button></a>
-        <button id="logoutBtn" class="btn-danger">Logout</button>
-    </nav>
-
-    <div class="card card-wide">
-        <h1>Pending Leave Requests</h1>
+<body style="margin: 0;">
+    <div class="dashboard-layout">
         
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Req ID</th>
-                        <th>Emp ID</th>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Reason</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="leaveTable">
-                    </tbody>
-            </table>
-        </div>
+        <aside class="sidebar">
+            <h2></h2>
+            <button id="btnPending" class="btn-primary">Pending Leaves</button>
+            <button id="btnApproved" class="btn-outline">Approved Leaves</button>
+            <button id="btnRejected" class="btn-outline">Rejected Leaves</button>
+            
+            <div style="flex-grow: 1;"></div>
+            <button id="logoutBtn" class="btn-danger">Logout</button>
+        </aside>
+
+        <main class="main-content">
+            <div class="card card-wide">
+                <h1 id="tableTitle">Pending Leave Requests</h1>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Req ID</th>
+                                <th>Emp ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Reason</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th id="actionHeader">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaveTable">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script src="manager.js"></script>

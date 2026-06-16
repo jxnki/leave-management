@@ -1,79 +1,122 @@
-if(localStorage.getItem("role") !== "manager")
-{
+if(localStorage.getItem("role") !== "manager") {
     window.location.href = "login.html";
 }
-loadPendingLeaves();
-async function approveLeave(id)
-{
-    await fetch(
-        `http://localhost:3000/leave/approve/${id}`,
-        {
-            method: "PUT"
-        }
-    );
 
-    location.reload();
+let allLeaves = []; // We will store all leaves here so we don't have to keep asking the server
+
+loadAllLeaves();
+
+async function loadAllLeaves() {
+    const token = localStorage.getItem("token"); 
+    
+    // Fetch ALL leaves (Approved, Pending, and Rejected)
+    const response = await fetch("http://localhost:3000/leave", {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+    
+    allLeaves = await response.json();
+    
+    // Default the table to show Pending leaves first
+    filterLeaves("Pending");
 }
 
-async function rejectLeave(id)
-{
-    await fetch(
-        `http://localhost:3000/leave/reject/${id}`,
-        {
-            method: "PUT"
-        }
-    );
+function filterLeaves(status) {
+    // 1. Update the Title
+    document.getElementById("tableTitle").innerText = `${status} Leave Requests`;
+    
+    // 2. Update Sidebar Active Button
+    document.getElementById("btnPending").className = status === "Pending" ? "btn-primary" : "btn-outline";
+    document.getElementById("btnApproved").className = status === "Approved" ? "btn-primary" : "btn-outline";
+    document.getElementById("btnRejected").className = status === "Rejected" ? "btn-primary" : "btn-outline";
 
-    location.reload();
-}
+    // 3. Show/Hide headers based on status
+    // We only show the "Status" column if we are viewing Pending leaves
+    const statusHeader = status === "Pending" ? "<th>Status</th>" : "";
+    const actionHeader = status === "Pending" ? '<th id="actionHeader">Action</th>' : "";
+    
+    // Rebuild the table header dynamically
+    const tableHead = document.querySelector("thead");
+    tableHead.innerHTML = `
+        <tr>
+            <th>Req ID</th>
+            <th>Emp ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Reason</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            ${statusHeader}
+            ${actionHeader}
+        </tr>
+    `;
 
-async function loadPendingLeaves()
-{
-    const response =
-        await fetch(
-            "http://localhost:3000/leave/pending"
-        );
+    const table = document.getElementById("leaveTable");
+    table.innerHTML = ""; 
 
-    const leaves =
-        await response.json();
+    // 4. Filter the array
+    const filteredLeaves = allLeaves.filter(leave => leave.status === status);
 
-    const table =
-        document.getElementById("leaveTable");
-
-    leaves.forEach(leave => {
+    filteredLeaves.forEach(leave => {
         const startDate = new Date(leave.start_date).toLocaleDateString("en-GB");
-
         const endDate = new Date(leave.end_date).toLocaleDateString("en-GB");
+
+        // Conditionally create the status cell and action buttons
+        let statusCell = status === "Pending" ? `<td><strong>${leave.status}</strong></td>` : "";
+        let actionButtons = "";
+        
+        if (status === "Pending") {
+            actionButtons = `
+                <td>
+                    <button onclick="approveLeave(${leave.id})">Approve</button>
+                    <button onclick="rejectLeave(${leave.id})">Reject</button>
+                </td>
+            `;
+        }
 
         table.innerHTML += `
         <tr>
             <td>${leave.id}</td>
             <td>${leave.user_id}</td>
             <td>${leave.name}</td>
-            <td>${leave.leave_type}</td>
+            <td style="text-transform: capitalize;">${leave.leave_type}</td>
             <td>${leave.reason}</td>
             <td>${startDate}</td>
             <td>${endDate}</td>
-            <td>${leave.status}</td>
-            <td>
-                <button onclick="approveLeave(${leave.id})">
-                    Approve
-                </button>
-
-                <button onclick="rejectLeave(${leave.id})">
-                    Reject
-                </button>
-            </td>
+            ${statusCell}
+            ${actionButtons}
         </tr>
         `;
     });
 }
+
+// --- Event Listeners ---
+document.getElementById("btnPending").addEventListener("click", () => filterLeaves("Pending"));
+document.getElementById("btnApproved").addEventListener("click", () => filterLeaves("Approved"));
+document.getElementById("btnRejected").addEventListener("click", () => filterLeaves("Rejected"));
 document.getElementById("logoutBtn").addEventListener("click", logout);
 
+async function approveLeave(id) {
+    const token = localStorage.getItem("token"); 
+    await fetch(`http://localhost:3000/leave/approve/${id}`, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+    loadAllLeaves(); // Refreshes the data instantly!
+}
 
-function logout()
-{
+async function rejectLeave(id) {
+    const token = localStorage.getItem("token"); 
+    await fetch(`http://localhost:3000/leave/reject/${id}`, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+    loadAllLeaves(); // Refreshes the data instantly!
+}
+
+function logout() {
     localStorage.removeItem("userId");
     localStorage.removeItem("role");
-    window.location.href = "login.html";
+    localStorage.removeItem("userName");
+    localStorage.removeItem("token");
+    window.location.href = "index.html";
 }

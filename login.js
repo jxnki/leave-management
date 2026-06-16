@@ -17,26 +17,30 @@ document
     .getElementById("loginBtn")
     .addEventListener("click", login);
 
-if(selectedRole === "manager")
-{
-    document
-        .getElementById("registerBtn")
-        .style.display = "none";
-}
-document
-    .getElementById("registerBtn")
-    .addEventListener("click", () => {
+const registerBtn = document.getElementById("registerBtn");
 
-        window.location.href =
-            "register.html";
+// Managers should not be able to register new accounts
+if (selectedRole === "manager" && registerBtn) {
+    registerBtn.style.display = "none";
+}
+
+if (registerBtn) {
+    registerBtn.addEventListener("click", () => {
+        window.location.href = "register.html";
     });
+}
+
+
 async function login() {
 
-    const email =
-        document.getElementById("email").value;
+    const email = document.getElementById("email").value;
 
-    const password =
-        document.getElementById("password").value;
+    const password = document.getElementById("password").value;
+
+    // Enforce that this page only allows the intended role to login.
+    // index.html sets localStorage.loginRole via employeeBtn / managerBtn.
+    const selectedRole = localStorage.getItem("loginRole");
+
 
     const response = await fetch(
         "http://localhost:3000/login",
@@ -54,35 +58,46 @@ async function login() {
         }
     );
 
-    const result = await response.json();
-    if(result.message === "Login Successful")
-    {
-        localStorage.setItem("userId",result.userId);
+    const data = await response.json();
 
-        localStorage.setItem("role",result.role);
-        localStorage.setItem("userName", result.name);
-        if(selectedRole === "employee" && result.role !== "employee")
-        {
-            document.getElementById("message").innerText ="Please use the Manager Portal";
+        if (data.message === "Login successful") {
+            // Enforce role-based access: only allow login that matches the page selection.
+            // index.html sets localStorage.loginRole to "employee" or "manager".
+            if (selectedRole && data.role !== selectedRole) {
+                document.getElementById("message").innerText = `Please login using the ${selectedRole} account.`;
+                return;
+            }
 
-            return;
+            // 1. Put the wristband in the browser's pocket!
+            localStorage.setItem("token", data.token); 
+
+            // 2. Save the other details so the dashboard can use them
+            localStorage.setItem("userId", data.userId);
+            localStorage.setItem("role", data.role);
+            localStorage.setItem("userName", data.userName);
+
+
+            // 3. Look at the role, and push them to the correct page
+            if (data.role === "manager") {
+                window.location.href = "manager.html";
+            } else {
+                window.location.href = "employee.html";
+            }
+        } 
+        else {
+            document.getElementById("message").innerText = data.message;
         }
-
-        if(selectedRole === "manager" &&result.role !== "manager")
-        {
-            document.getElementById("message").innerText ="Please use the Employee Portal";
-
-            return;
-        }
-
-        if(result.role === "employee")
-        {
-            window.location.href ="employee.html";
-        }
-        else
-        {
-            window.location.href ="manager.html";
-        }
-    }
-    document.getElementById("message").innerText = result.message;
 }
+
+const loginInputs = document.querySelectorAll('#email, #password');
+
+// Loop through them and add a listener to each one
+loginInputs.forEach(input => {
+    input.addEventListener('keypress', function(event) {
+        // Check if the key pressed was "Enter"
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Stops the browser from doing default things
+            document.getElementById('loginBtn').click(); // Digitally clicks the login button!
+        }
+    });
+});

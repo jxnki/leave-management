@@ -4,15 +4,15 @@
     /* Coffee & Cream Palette */
     --bg-main: #E8D8C4;       /* Soft Beige Background */
     --card-bg: #F4EBE1;       /* Warm Cream for Cards (Replaces White/Green) */
-    --primary: #A77F60;       /* Warm Caramel (Kept from your choice) */
-    --primary-dark: #8A5F41;  /* Deep Mocha (Kept from your choice) */
-    
-    /* Custom UI Colors derived from the palette */
-    --text-main: #3A2618;     /* Very dark brown for readable text */
-    --text-muted: #6D4C33;    /* Muted brown for secondary text */
-    --input-bg: #EAE0D5;      /* Slightly darker cream for inputs */
-    --border-color: #D4C4B7;  /* Soft border color */
-    --danger: #BA6B5D;        /* Warm terracotta red for logout/reject */
+    --primary: #A77F60;       /* Warm Caramel */
+    --primary-dark: #8A5F41;  /* Deep Mocha */
+
+    --text-main: #3A2618;
+    --text-muted: #6D4C33;
+    --input-bg: #EAE0D5;
+    --border-color: #D4C4B7;
+    --danger: #BA6B5D;
+
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
@@ -40,24 +40,51 @@ body {
     padding: 20px;
 }
 
+/* Make login/register boxes size-consistent */
+.center-wrapper .card {
+    padding: 4.25rem 3rem;
+    max-width: 550px;
+}
+
+/* --- Shared card styles --- */
 .card {
     background: var(--card-bg);
-    /* Increased padding: 3.5rem top/bottom, 2.5rem left/right for more height */
-    padding: 3.5rem 2.5rem; 
+    padding: 4.25rem 3rem;
     border-radius: 16px;
     box-shadow: var(--shadow);
     width: 100%;
-    /* Increased from 400px to 550px to make it a wider rectangle */
-    max-width: 550px; 
+    max-width: 550px;
     text-align: center;
     border: 2px solid #FAD1B8;
-    
 }
 
 .card-wide {
     max-width: 1200px;
     width: 95%;
     margin: 2rem auto;
+}
+
+/* --- Top-left back links (login/register) --- */
+.top-left-link {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--primary-dark);
+    font-weight: 700;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: rgba(244, 235, 225, 0.75);
+    backdrop-filter: blur(8px);
+}
+
+.top-left-link:hover {
+    border-color: rgba(167, 127, 96, 0.9);
 }
 
 /* --- Typography --- */
@@ -164,7 +191,6 @@ button {
     color: var(--card-bg);
 }
 
-/* --- Add this to your Button styles --- */
 .button-group {
     display: flex;
     gap: 1rem;
@@ -172,7 +198,7 @@ button {
 }
 
 .button-group button {
-    margin-bottom: 0; /* Removes the bottom margin so they align perfectly */
+    margin-bottom: 0;
 }
 
 /* --- Navigation Bar --- */
@@ -239,10 +265,10 @@ thead {
 }
 
 th, td {
-    padding: 0.75rem 0.5rem; 
+    padding: 0.75rem 0.5rem;
     text-align: left;
     border-bottom: 1px solid #FAD1B8;
-    font-size: 0.95rem; 
+    font-size: 0.95rem;
 }
 
 tbody tr:hover {
@@ -256,24 +282,22 @@ td button {
     margin: 0.2rem 0.1rem;
 }
 
-/* Table specific button colors */
 td button:first-child {
     background-color: var(--primary-dark);
     color: var(--card-bg);
 }
+
 td button:last-child {
     background-color: var(--danger);
     color: var(--card-bg);
 }
 
-/* =========================================
-   DASHBOARD LAYOUT (SIDEBAR & MAIN CONTENT)
-   ========================================= */
+/* --- Dashboard Layout (Sidebar & Main) --- */
 .dashboard-layout {
     display: flex;
     height: 100vh;
     width: 100vw;
-    overflow: hidden; /* Prevents the whole page from scrolling */
+    overflow: hidden;
 }
 
 .sidebar {
@@ -295,19 +319,17 @@ td button:last-child {
 }
 
 .main-content {
-    flex: 1; /* Tells the main content to fill the remaining space */
+    flex: 1;
     padding: 2rem 3rem;
-    overflow-y: auto; /* Only the main content scrolls if it gets too long */
+    overflow-y: auto;
     background-color: var(--bg-main);
 }
 
-/* =========================================
-   WIDGETS & CALENDAR
-   ========================================= */
+/* --- Widgets & Calendar --- */
 .dashboard-widgets {
     display: flex;
     gap: 2rem;
-    flex-wrap: wrap; /* Wraps to next line if screen is small */
+    flex-wrap: wrap;
     align-items: flex-start;
 }
 
@@ -326,7 +348,7 @@ td button:last-child {
 
 .calendar-weekdays, .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 equal columns for 7 days */
+    grid-template-columns: repeat(7, 1fr);
     text-align: center;
     gap: 5px;
 }
@@ -357,7 +379,8 @@ td button:last-child {
 }
 
 .calendar-day.approved-day {
-    background-color: #6E8E59; /* Sage Green matching your chart! */
+    background-color: #6E8E59;
     color: white;
     box-shadow: 0 4px 6px rgba(110, 142, 89, 0.3);
 }
+
