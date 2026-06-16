@@ -101,3 +101,16 @@ loginInputs.forEach(input => {
         }
     });
 });
+
+// Add this right at the bottom of your login.js file
+document.getElementById("toggleLoginPassword").addEventListener("click", function () {
+    const passwordInput = document.getElementById("password");
+    
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        this.innerText = "🔒"; // Hide asset indicator
+    } else {
+        passwordInput.type = "password";
+        this.innerText = "👁️"; // Show asset indicator
+    }
+});

@@ -384,3 +384,34 @@ td button:last-child {
     box-shadow: 0 4px 6px rgba(110, 142, 89, 0.3);
 }
 
+/* --- Show/Hide Password Positioning --- */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 3rem; /* Leave room so text doesn't overlap the eye icon */
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    height: auto;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    user-select: none;
+}
+
+.toggle-password-btn:hover {
+    color: var(--primary);
+    transform: translateY(-50%) scale(1.1); /* Subtle hover animation without losing vertical centering */
+}

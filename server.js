@@ -65,9 +65,28 @@ app.post("/register", async (req, res) => {
     return res.send("Name too short");
     }
 
-    if(password.length < 6)
-    {
-        return res.send("Password must be at least 6 characters");
+    const passwordErrors = [];
+
+    if (password.length < 8) {
+        passwordErrors.push("at least 8 characters");
+    }
+    if (!/[A-Z]/.test(password)) {
+        passwordErrors.push("an uppercase letter");
+    }
+    if (!/[a-z]/.test(password)) {
+        passwordErrors.push("a lowercase letter");
+    }
+    if (!/[0-9]/.test(password)) {
+        passwordErrors.push("a number");
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+        passwordErrors.push("a special character");
+    }
+    if (/(.)\1\1/.test(password)) {
+    passwordErrors.push("no 3+ consecutive identical characters");
+    }
+    if (passwordErrors.length > 0) {
+        return res.send(`Password missing: ${passwordErrors.join(", ")}.`);
     }
 
     console.log(name);
