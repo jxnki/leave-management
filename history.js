@@ -10,6 +10,24 @@ function editLeave(id)
     window.location.href = "leave.html";
 }
 
+async function deleteLeave(id)
+{
+    if (!confirm("Are you sure you want to delete this leave request?")) {
+        return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    await fetch(`http://localhost:3000/leave/${id}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    loadLeaves();
+}
+
 async function loadLeaves()
 {
     const userId = localStorage.getItem("userId");
@@ -35,6 +53,10 @@ async function loadLeaves()
         const startDate = new Date(leave.start_date).toLocaleDateString("en-GB");
         const endDate = new Date(leave.end_date).toLocaleDateString("en-GB");
 
+        const statusDisplay = leave.status === "Rejected" && leave.rejection_reason
+            ? `<strong>${leave.status}</strong><br><span style="font-size: 0.8rem; color: var(--text-muted);">Reason: ${leave.rejection_reason}</span>`
+            : `<strong>${leave.status}</strong>`;
+
         table.innerHTML += `
         <tr>
             <td>${leave.id}</td>
@@ -42,11 +64,11 @@ async function loadLeaves()
             <td>${startDate}</td>
             <td>${endDate}</td>
             <td>${leave.reason}</td>
-            <td><strong>${leave.status}</strong></td>
+            <td>${statusDisplay}</td>
             <td>
                 ${
                     leave.status === "Pending"
-                    ? `<button onclick="editLeave(${leave.id})">Edit</button>`
+                    ? `<button onclick="editLeave(${leave.id})">Edit</button><button onclick="deleteLeave(${leave.id})">Delete</button>`
                     : "-"
                 }
             </td>

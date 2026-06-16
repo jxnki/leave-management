@@ -94,21 +94,42 @@ document.getElementById("btnPending").addEventListener("click", () => filterLeav
 document.getElementById("btnApproved").addEventListener("click", () => filterLeaves("Approved"));
 document.getElementById("btnRejected").addEventListener("click", () => filterLeaves("Rejected"));
 document.getElementById("logoutBtn").addEventListener("click", logout);
+document.getElementById("btnEmployeeHistory").addEventListener("click", () => {
+    window.location.href = "employee-history.html";
+});
 
 async function approveLeave(id) {
-    const token = localStorage.getItem("token"); 
-    await fetch(`http://localhost:3000/leave/approve/${id}`, {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`http://localhost:3000/leave/approve/${id}`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` }
     });
+
+    if (!response.ok) {
+        const message = await response.text();
+        alert(message);
+        return;
+    }
+
     loadAllLeaves(); // Refreshes the data instantly!
 }
 
 async function rejectLeave(id) {
-    const token = localStorage.getItem("token"); 
+    const reason = prompt("Please provide a reason for rejecting this leave request:");
+
+    // If the manager cancels the prompt, don't reject the leave
+    if (reason === null) {
+        return;
+    }
+
+    const token = localStorage.getItem("token");
     await fetch(`http://localhost:3000/leave/reject/${id}`, {
         method: "PUT",
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ rejection_reason: reason })
     });
     loadAllLeaves(); // Refreshes the data instantly!
 }

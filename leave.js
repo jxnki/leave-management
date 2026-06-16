@@ -82,10 +82,10 @@ async function applyLeave()
     if(result === "No leave balance remaining")
     {
         document.getElementById("message")
-            .innerText = result;
+            .innerText = "You don't have enough leave balance left for these dates. Please choose fewer days or check your remaining balance on the dashboard.";
         setTimeout(() => {
             window.location.href = "employee.html";
-        }, 1000);
+        }, 2500);
 
         return;
     }

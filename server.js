@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const path = require("path");
 const mysql = require("mysql2");
 const cors=require("cors");
 const bcrypt=require("bcrypt");
@@ -11,6 +12,10 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 app.use(express.json());
 app.use(cors());
+
+// Serve the frontend files (html, js, css, images) directly from Express
+app.use(express.static(path.join(__dirname)));
+
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -158,45 +163,45 @@ app.post("/leave",authenticateToken, (req, res) => {
 
     const status = "Pending";
 
-    const checkSql = "SELECT COUNT(*) AS taken FROM leave_requests WHERE user_id=? AND status='Approved'";
+    // Number of days being requested in THIS application (inclusive of both ends)
+    const requestedDays = Math.round((new Date(end_date) - new Date(start_date)) / (1000 * 60 * 60 * 24)) + 1;
 
-    db.query(
-        checkSql,
-        [user_id],
-        (err, results) => {
+    const checkSql = "SELECT start_date, end_date FROM leave_requests WHERE user_id=? AND status='Approved'";
 
-            if(err)
-            {
-                console.log(err);
-                return;
-            }
+    db.query(checkSql, [user_id], (err, results) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
 
-            const totalLeaves = 20;
+        const totalLeaves = 20;
 
-            const taken = results[0].taken;
-
-            const remaining = totalLeaves - taken;
-
-            if(remaining <= 0)
-            {
-                return res.send("No leave balance remaining");
-            }
-
-            const sql =
-                "INSERT INTO leave_requests (user_id, leave_type, start_date, end_date, reason, status) VALUES (?,?,?,?,?,?)";
-
-            db.query( sql,[user_id,leave_type,start_date,end_date,reason,status],
-                (err, result) => {
-
-                    if(err)
-                    {
-                        console.log(err);
-                        return;
-                    }
-
-                    res.send("Leave Applied Successfully");
-                });
+        // Sum up days already taken across all approved leaves
+        let approvedDays = 0;
+        results.forEach(row => {
+            const days = Math.round((new Date(row.end_date) - new Date(row.start_date)) / (1000 * 60 * 60 * 24)) + 1;
+            approvedDays += days;
         });
+
+        if (requestedDays + approvedDays > totalLeaves) {
+            return res.send("No leave balance remaining");
+        }
+
+        const sql =
+            "INSERT INTO leave_requests (user_id, leave_type, start_date, end_date, reason, status) VALUES (?,?,?,?,?,?)";
+
+        db.query( sql,[user_id,leave_type,start_date,end_date,reason,status],
+            (err, result) => {
+
+                if(err)
+                {
+                    console.log(err);
+                    return;
+                }
+
+                res.send("Leave Applied Successfully");
+            });
+    });
 });
 
 app.get("/leave",authenticateToken, (req, res) => {
@@ -275,32 +280,72 @@ app.put("/leave/approve/:id",authenticateToken, (req, res) => {
 
     const id = req.params.id;
 
-    const sql = "UPDATE leave_requests SET status='Approved' WHERE id=?";
+    // First, fetch the leave being approved so we know its user and day count
+    const getLeaveSql = "SELECT user_id, start_date, end_date FROM leave_requests WHERE id=?";
 
-    db.query(
-        sql,
-        [id],
-        (err, result) => {
+    db.query(getLeaveSql, [id], (err, leaveResults) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
 
-            if(err)
-            {
+        if (leaveResults.length === 0) {
+            return res.status(404).send("Leave request not found");
+        }
+
+        const leave = leaveResults[0];
+        const requestedDays = Math.round((new Date(leave.end_date) - new Date(leave.start_date)) / (1000 * 60 * 60 * 24)) + 1;
+
+        // Now fetch this employee's already-approved leaves to total up days taken so far
+        const approvedSql = "SELECT start_date, end_date FROM leave_requests WHERE user_id=? AND status='Approved'";
+
+        db.query(approvedSql, [leave.user_id], (err, approvedResults) => {
+            if (err) {
                 console.log(err);
                 return;
             }
 
-            res.send("Leave Approved");
+            const totalLeaves = 20;
+
+            let approvedDays = 0;
+            approvedResults.forEach(row => {
+                const days = Math.round((new Date(row.end_date) - new Date(row.start_date)) / (1000 * 60 * 60 * 24)) + 1;
+                approvedDays += days;
+            });
+
+            if (approvedDays + requestedDays > totalLeaves) {
+                return res.status(400).send(`Cannot approve: this employee's leave balance would exceed ${totalLeaves} days (already approved: ${approvedDays}, this request: ${requestedDays}).`);
+            }
+
+            const sql = "UPDATE leave_requests SET status='Approved' WHERE id=?";
+
+            db.query(
+                sql,
+                [id],
+                (err, result) => {
+
+                    if(err)
+                    {
+                        console.log(err);
+                        return;
+                    }
+
+                    res.send("Leave Approved");
+                });
         });
+    });
 });
 
 app.put("/leave/reject/:id",authenticateToken, (req, res) => {
 
     const id = req.params.id;
+    const { rejection_reason } = req.body;
 
-    const sql = "UPDATE leave_requests SET status='Rejected' WHERE id=?";
+    const sql = "UPDATE leave_requests SET status='Rejected', rejection_reason=? WHERE id=?";
 
     db.query(
         sql,
-        [id],
+        [rejection_reason, id],
         (err, result) => {
 
             if(err)
@@ -337,11 +382,78 @@ app.put("/leave/:id",authenticateToken, (req, res) => {
         });
 });
 
+app.delete("/leave/:id", authenticateToken, (req, res) => {
+
+    const id = req.params.id;
+
+    const sql = "DELETE FROM leave_requests WHERE id=?";
+
+    db.query(
+        sql,
+        [id],
+        (err, result) => {
+
+            if(err)
+            {
+                console.log(err);
+                return;
+            }
+
+            res.send("Leave Deleted");
+        });
+});
+
+// For managers: a summary of every employee's leave usage (total/taken/remaining days)
+app.get("/employees/leave-summary", authenticateToken, (req, res) => {
+
+    const sql = `
+        SELECT users.id AS user_id, users.name,
+               start_date, end_date
+        FROM users
+        LEFT JOIN leave_requests
+            ON leave_requests.user_id = users.id AND leave_requests.status = 'Approved'
+        WHERE users.role = 'employee'
+    `;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
+
+        const totalLeaves = 20;
+
+        // Group rows by employee, summing approved leave days for each
+        const employeeMap = {};
+
+        results.forEach(row => {
+            if (!employeeMap[row.user_id]) {
+                employeeMap[row.user_id] = { user_id: row.user_id, name: row.name, leavesTaken: 0 };
+            }
+
+            if (row.start_date && row.end_date) {
+                const days = Math.round((new Date(row.end_date) - new Date(row.start_date)) / (1000 * 60 * 60 * 24)) + 1;
+                employeeMap[row.user_id].leavesTaken += days;
+            }
+        });
+
+        const summary = Object.values(employeeMap).map(emp => ({
+            user_id: emp.user_id,
+            name: emp.name,
+            totalLeaves: totalLeaves,
+            leavesTaken: emp.leavesTaken,
+            remainingLeaves: Math.max(0, totalLeaves - emp.leavesTaken)
+        }));
+
+        res.json(summary);
+    });
+});
+
 app.get("/dashboard/:id",authenticateToken, (req, res) => {
 
     const userId = req.params.id;
 
-    const sql = "SELECT COUNT(*) AS taken FROM leave_requests WHERE user_id=? AND status='Approved'";
+    const sql = "SELECT start_date, end_date FROM leave_requests WHERE user_id=? AND status='Approved'";
 
     db.query(
         sql,
@@ -355,7 +467,13 @@ app.get("/dashboard/:id",authenticateToken, (req, res) => {
             }
 
             const totalLeaves = 20;
-            const leavesTaken = results[0].taken;
+
+            // Sum up the number of days across all approved leaves (inclusive of both ends)
+            let leavesTaken = 0;
+            results.forEach(row => {
+                const days = Math.round((new Date(row.end_date) - new Date(row.start_date)) / (1000 * 60 * 60 * 24)) + 1;
+                leavesTaken += days;
+            });
 
             const remainingLeaves = Math.max( 0, totalLeaves - leavesTaken);
 
@@ -365,6 +483,21 @@ app.get("/dashboard/:id",authenticateToken, (req, res) => {
                 remainingLeaves
             });
         });
+});
+
+// Catch-all for any route that doesn't match a real API endpoint or static file.
+// Known API path prefixes get a JSON 404; everything else (typos in page URLs, etc.)
+// gets the friendly 404 page.
+const apiPrefixes = ["/login", "/register", "/leave", "/dashboard", "/employees"];
+
+app.use((req, res) => {
+    const isApiRoute = apiPrefixes.some(prefix => req.path.startsWith(prefix));
+
+    if (isApiRoute) {
+        return res.status(404).json({ message: "Not Found: This API route does not exist." });
+    }
+
+    res.status(404).sendFile(path.join(__dirname, "404.html"));
 });
 
 app.listen(3000, () => {
