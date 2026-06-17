@@ -6,9 +6,17 @@ const mysql = require("mysql2");
 const cors=require("cors");
 const bcrypt=require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY;
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 app.use(express.json());
 app.use(cors());
@@ -204,7 +212,34 @@ app.post("/leave",authenticateToken, (req, res) => {
                     return;
                 }
 
-                res.send("Leave Applied Successfully");
+                const userSql =
+    "SELECT email,name FROM users WHERE id=?";
+
+db.query(
+    userSql,
+    [user_id],
+    async (err,userResults) => {
+
+        if(!err && userResults.length > 0)
+        {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: userResults[0].email,
+                subject: "Leave Request Submitted",
+                text:
+                    `Hello ${userResults[0].name},
+
+                Your leave request has been submitted successfully.
+
+                Status: Pending
+
+                Thank you.`
+                            });
+                        }
+
+                        res.send("Leave Applied Successfully");
+                    }
+                );
             });
     });
 });
@@ -335,7 +370,38 @@ app.put("/leave/approve/:id",authenticateToken, (req, res) => {
                         return;
                     }
 
-                    res.send("Leave Approved");
+                    const userSql = `
+SELECT users.email,
+       users.name
+FROM leave_requests
+JOIN users
+ON leave_requests.user_id = users.id
+WHERE leave_requests.id = ?
+`;
+
+db.query(
+    userSql,
+    [id],
+    async (err,userResults) => {
+
+        if(!err && userResults.length > 0)
+        {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: userResults[0].email,
+                subject: "Leave Approved",
+                text:
+                    `Hello ${userResults[0].name},
+
+                    Your leave request has been APPROVED.
+
+                    Enjoy your leave.`
+                                });
+                            }
+
+                            res.send("Leave Approved");
+                        }
+                    );
                 });
         });
     });
@@ -359,7 +425,38 @@ app.put("/leave/reject/:id",authenticateToken, (req, res) => {
                 return;
             }
 
-            res.send("Leave Rejected");
+            const userSql = `
+SELECT users.email,
+       users.name
+FROM leave_requests
+JOIN users
+ON leave_requests.user_id = users.id
+WHERE leave_requests.id = ?
+`;
+
+db.query(
+    userSql,
+    [id],
+    async (err,userResults) => {
+
+        if(!err && userResults.length > 0)
+        {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: userResults[0].email,
+                subject: "Leave Rejected",
+                text:
+                    `Hello ${userResults[0].name},
+
+                Your leave request has been REJECTED.
+
+                Please contact your manager for details.`
+                            });
+                        }
+
+                        res.send("Leave Rejected");
+                    }
+                );
         });
 });
 
