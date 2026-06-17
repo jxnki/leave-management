@@ -8,16 +8,21 @@ loadAllLeaves();
 
 async function loadAllLeaves() {
     const token = localStorage.getItem("token"); 
-    
+
     // Fetch ALL leaves (Approved, Pending, and Rejected)
     const response = await fetch("http://localhost:3000/leave", {
         headers: { "Authorization": `Bearer ${token}` }
     });
-    
+
     allLeaves = await response.json();
-    
-    // Default the table to show Pending leaves first
-    filterLeaves("Pending");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedStatus = urlParams.get("status");
+
+    const allowedStatuses = new Set(["Pending", "Approved", "Rejected"]);
+    const statusToShow = allowedStatuses.has(requestedStatus) ? requestedStatus : "Pending";
+
+    filterLeaves(statusToShow);
 }
 
 function filterLeaves(status) {

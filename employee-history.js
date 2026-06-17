@@ -28,9 +28,9 @@ async function loadEmployeeSummary() {
     });
 }
 
-document.getElementById("btnPending").addEventListener("click", () => window.location.href = "manager.html");
-document.getElementById("btnApproved").addEventListener("click", () => window.location.href = "manager.html");
-document.getElementById("btnRejected").addEventListener("click", () => window.location.href = "manager.html");
+document.getElementById("btnPending").addEventListener("click", () => window.location.href = "manager.html?status=Pending");
+document.getElementById("btnApproved").addEventListener("click", () => window.location.href = "manager.html?status=Approved");
+document.getElementById("btnRejected").addEventListener("click", () => window.location.href = "manager.html?status=Rejected");
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("userId");
