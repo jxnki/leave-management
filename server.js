@@ -157,6 +157,11 @@ app.post("/leave",authenticateToken, (req, res) => {
 
     const {leave_type,start_date,end_date,reason} = req.body;
     const user_id = req.user.userId;
+
+    if (!leave_type || !start_date || !end_date || !reason || !reason.trim()) {
+        return res.send("Error: Leave type, start date, end date, and reason are all required.");
+    }
+
     if (new Date(end_date) < new Date(start_date)) {
         return res.send("Error: End date cannot be before start date.");
     }
@@ -362,6 +367,14 @@ app.put("/leave/:id",authenticateToken, (req, res) => {
     const id = req.params.id;
 
     const { leave_type,start_date,end_date,reason } = req.body;
+
+    if (!leave_type || !start_date || !end_date || !reason || !reason.trim()) {
+        return res.send("Error: Leave type, start date, end date, and reason are all required.");
+    }
+
+    if (new Date(end_date) < new Date(start_date)) {
+        return res.send("Error: End date cannot be before start date.");
+    }
 
     const sql = "UPDATE leave_requests SET leave_type=?, start_date=?, end_date=?, reason=? WHERE id=?";
     db.query(

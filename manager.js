@@ -2,12 +2,16 @@ if(localStorage.getItem("role") !== "manager") {
     window.location.href = "login.html";
 }
 
-let allLeaves = []; // We will store all leaves here so we don't have to keep asking the server
+let allLeaves = []; // Cache of ALL leaves (Approved, Pending, Rejected) - used for Approved/Rejected tabs
 
-loadAllLeaves();
+// Check if we were navigated here with a specific tab requested (e.g. from employee-history.html)
+const urlParams = new URLSearchParams(window.location.search);
+const requestedStatus = urlParams.get("status") || "Pending";
+
+filterLeaves(requestedStatus); // Show the requested tab (defaults to Pending)
 
 async function loadAllLeaves() {
-    const token = localStorage.getItem("token"); 
+    const token = localStorage.getItem("token");
 
     // Fetch ALL leaves (Approved, Pending, and Rejected)
     const response = await fetch("http://localhost:3000/leave", {
@@ -15,17 +19,53 @@ async function loadAllLeaves() {
     });
 
     allLeaves = await response.json();
+}
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const requestedStatus = urlParams.get("status");
+async function loadPendingLeaves() {
+    try {
+        const token = localStorage.getItem("token");
 
-    const allowedStatuses = new Set(["Pending", "Approved", "Rejected"]);
-    const statusToShow = allowedStatuses.has(requestedStatus) ? requestedStatus : "Pending";
+        // Use the dedicated endpoint for Pending leaves
+        const response = await fetch("http://localhost:3000/leave/pending", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
 
-    filterLeaves(statusToShow);
+        const pendingLeaves = await response.json();
+
+        renderLeaves("Pending", pendingLeaves);
+    } catch (err) {
+        console.log(err);
+        showLoadError();
+    }
 }
 
 function filterLeaves(status) {
+    if (status === "Pending") {
+        loadPendingLeaves();
+        return;
+    }
+
+    // Approved / Rejected still come from the full cached list, refreshed each time the tab is opened
+    loadAllLeaves()
+        .then(() => {
+            const filtered = allLeaves.filter(leave => leave.status === status);
+            renderLeaves(status, filtered);
+        })
+        .catch((err) => {
+            console.log(err);
+            showLoadError();
+        });
+}
+
+function showLoadError() {
+    // Something went wrong fetching data - reveal the page with a clear error instead of staying blank
+    document.getElementById("tableTitle").innerText = "Unable to Load Leave Requests";
+    document.getElementById("leaveTable").innerHTML =
+        `<tr><td colspan="9" style="text-align: center;">Something went wrong while loading data. Please check your connection and try refreshing the page.</td></tr>`;
+    document.getElementById("mainContent").style.visibility = "visible";
+}
+
+function renderLeaves(status, leavesToShow) {
     // 1. Update the Title
     document.getElementById("tableTitle").innerText = `${status} Leave Requests`;
     
@@ -58,10 +98,7 @@ function filterLeaves(status) {
     const table = document.getElementById("leaveTable");
     table.innerHTML = ""; 
 
-    // 4. Filter the array
-    const filteredLeaves = allLeaves.filter(leave => leave.status === status);
-
-    filteredLeaves.forEach(leave => {
+    leavesToShow.forEach(leave => {
         const startDate = new Date(leave.start_date).toLocaleDateString("en-GB");
         const endDate = new Date(leave.end_date).toLocaleDateString("en-GB");
 
@@ -92,6 +129,9 @@ function filterLeaves(status) {
         </tr>
         `;
     });
+
+    // Now that the correct tab is fully painted, reveal the page (avoids flashing the wrong tab)
+    document.getElementById("mainContent").style.visibility = "visible";
 }
 
 // --- Event Listeners ---
@@ -116,7 +156,7 @@ async function approveLeave(id) {
         return;
     }
 
-    loadAllLeaves(); // Refreshes the data instantly!
+    loadPendingLeaves(); // Refreshes the Pending tab, since this button only appears there
 }
 
 async function rejectLeave(id) {
@@ -136,7 +176,7 @@ async function rejectLeave(id) {
         },
         body: JSON.stringify({ rejection_reason: reason })
     });
-    loadAllLeaves(); // Refreshes the data instantly!
+    loadPendingLeaves(); // Refreshes the Pending tab, since this button only appears there
 }
 
 function logout() {

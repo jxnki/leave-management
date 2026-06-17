@@ -44,6 +44,15 @@ async function applyLeave()
     const reason =
         document.getElementById("reason").value;
 
+    if(!leave_type || !start_date || !end_date || !reason.trim())
+    {
+        document.getElementById("message")
+            .innerText =
+            "Please fill in all fields, including the reason, before submitting.";
+
+        return;
+    }
+
     if(end_date < start_date)
     {
         document.getElementById("message")
