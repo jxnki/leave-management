@@ -54,9 +54,9 @@ document.getElementById("toggleRegPassword").addEventListener("click", function 
     
     if (passwordInput.type === "password") {
         passwordInput.type = "text";
-        this.innerText = "🔒";
+        this.innerText = "Hide";
     } else {
         passwordInput.type = "password";
-        this.innerText = "👁️";
+        this.innerText = "Show";
     }
 });

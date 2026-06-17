@@ -108,9 +108,9 @@ document.getElementById("toggleLoginPassword").addEventListener("click", functio
     
     if (passwordInput.type === "password") {
         passwordInput.type = "text";
-        this.innerText = "🔒"; // Hide asset indicator
+        this.innerText = "Hide"; // Hide asset indicator
     } else {
         passwordInput.type = "password";
-        this.innerText = "👁️"; // Show asset indicator
+        this.innerText = "Show"; // Show asset indicator
     }
 });
