@@ -40,23 +40,17 @@ db.connect((err) => {
 });
 
 function authenticateToken(req, res, next) {
-    // 1. Look at the request headers for the wristband
     const authHeader = req.headers['authorization'];
     
-    // Tokens are usually sent as "Bearer abc123def456". We just want the code part.
     const token = authHeader && authHeader.split(' ')[1]; 
 
-    // 2. If they didn't bring a wristband at all, kick them out (401 Unauthorized)
     if (!token) return res.status(401).send("Access Denied: No Token Provided!");
 
-    // 3. Verify the wristband using our hidden .env secret key
     jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
-        // If the signature is fake or expired, kick them out (403 Forbidden)
         if (err) return res.status(403).send("Access Denied: Invalid Token!");
         
-        // If it's valid, attach the decoded info to the request and let them in!
         req.user = user; 
-        next(); // Moves on to your actual database code
+        next(); 
     });
 }
 
@@ -129,17 +123,15 @@ app.post("/login", async (req, res) => {
     db.query(sql, [email], async (err, results) => {
         if(err) {
             console.log(err);
-            return res.status(500).json({message: "Database error"}); // Don't leave the frontend hanging!
+            return res.status(500).json({message: "Database error"});
         }
 
         if(results.length > 0) {
-            // 1. Grab the actual user from the database results
             const user = results[0]; 
             
             const match = await bcrypt.compare(password, user.password); 
 
             if(match) {
-                // 3. The Payload & Wristband (fixed typo)
                 const payload = { userId: user.id, role: user.role };
                 const token = jwt.sign(payload, process.env.SECRET_KEY, {expiresIn: "2h"});
                 
@@ -151,7 +143,6 @@ app.post("/login", async (req, res) => {
                     userName: user.name
                 });
             } else {
-                // 4. Handle the wrong password scenario
                 res.json({message: "Invalid Credentials"}); 
             }
         }
@@ -212,35 +203,34 @@ app.post("/leave",authenticateToken, (req, res) => {
                     return;
                 }
 
-                const userSql =
-    "SELECT email,name FROM users WHERE id=?";
+                // Respond to the client right away - don't make them wait on the email round-trip.
+                res.send("Leave Applied Successfully");
 
-db.query(
-    userSql,
-    [user_id],
-    async (err,userResults) => {
+                const userSql = "SELECT email,name FROM users WHERE id=?";
 
-        if(!err && userResults.length > 0)
-        {
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: userResults[0].email,
-                subject: "Leave Request Submitted",
-                text:
-                    `Hello ${userResults[0].name},
+        db.query(
+            userSql,
+            [user_id],
+            (err,userResults) => {
 
-                Your leave request has been submitted successfully.
+                if(!err && userResults.length > 0)
+                {
+                    transporter.sendMail({
+                        from: process.env.EMAIL_USER,
+                        to: userResults[0].email,
+                        subject: "Leave Request Submitted",
+                        text:
+                            `Hello ${userResults[0].name},
 
-                Status: Pending
+                        Your leave request has been submitted successfully.
 
-                Thank you.`
-                            });
-                        }
+                        Status: Pending
 
-                        res.send("Leave Applied Successfully");
-                    }
-                );
+                        Thank you.`
+                                    }).catch(err => console.log("Email send failed:", err));
+                }
             });
+        });
     });
 });
 
@@ -392,16 +382,11 @@ db.query(
                 subject: "Leave Approved",
                 text:
                     `Hello ${userResults[0].name},
-
                     Your leave request has been APPROVED.
-
-                    Enjoy your leave.`
-                                });
+                    Enjoy your leave.`});
                             }
-
                             res.send("Leave Approved");
-                        }
-                    );
+                        });
                 });
         });
     });

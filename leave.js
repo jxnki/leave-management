@@ -99,12 +99,19 @@ async function applyLeave()
         return;
     }
 
+    document.getElementById("message").style.color = "#6E8E59";
+    document.getElementById("message").innerText = leaveId
+        ? "Leave updated successfully!"
+        : "Leave applied successfully!";
+
     if(leaveId)
     {
         localStorage.removeItem("leaveId");
     }
 
-    window.location.href = "history.html";
+    setTimeout(() => {
+        window.location.href = "history.html";
+    }, 1200);
 }
 document.getElementById("dashboardBtn").addEventListener("click", () => window.location.href = "employee.html");
 document.getElementById("historyBtn").addEventListener("click", () => window.location.href = "history.html");
