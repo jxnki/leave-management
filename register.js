@@ -51,12 +51,21 @@ registerInputs.forEach(input => {
 // Add this right at the bottom of your register.js file
 document.getElementById("toggleRegPassword").addEventListener("click", function () {
     const passwordInput = document.getElementById("password");
-    
+
     if (passwordInput.type === "password") {
         passwordInput.type = "text";
-        this.innerText = "Hide";
+        this.textContent = "Hide";
     } else {
         passwordInput.type = "password";
-        this.innerText = "Show";
+        this.textContent = "Show";
     }
+});
+
+// Initialize button label to match initial state (password hidden)
+document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("toggleRegPassword");
+    const passwordInput = document.getElementById("password");
+    if (!btn || !passwordInput) return;
+
+    btn.textContent = passwordInput.type === "password" ? "Show" : "Hide";
 });
